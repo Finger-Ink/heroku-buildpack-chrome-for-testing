@@ -5,7 +5,7 @@ FROM --platform=linux/amd64 heroku/heroku:${STACK_VERSION}-build as build
 ARG STACK_VERSION
 ENV STACK="heroku-${STACK_VERSION}"
 
-ARG GOOGLE_CHROME_MILESTONE_OFFSET
+ARG GOOGLE_CHROME_MAJOR_VERSION
 
 # On Heroku-24 and later the default user is not root.
 # Once support for Heroku-22 and older is removed, the `useradd` steps below can be removed.
@@ -18,7 +18,7 @@ RUN mkdir -p /tmp/build /tmp/cache /tmp/env
 COPY --chown=non-root-user . /buildpack
 
 # Emulate the platform providing app config vars via env directory
-RUN if [ -n "${GOOGLE_CHROME_MILESTONE_OFFSET}" ]; then echo "${GOOGLE_CHROME_MILESTONE_OFFSET}" > /tmp/env/GOOGLE_CHROME_MILESTONE_OFFSET; fi
+RUN if [ -n "${GOOGLE_CHROME_MAJOR_VERSION}" ]; then echo "${GOOGLE_CHROME_MAJOR_VERSION}" > /tmp/env/GOOGLE_CHROME_MAJOR_VERSION; fi
 
 # Sanitize the environment seen by the buildpack, to prevent reliance on
 # environment variables that won't be present when it's run by Heroku CI.

@@ -46,25 +46,29 @@ if which chrome; then
   error "Chrome is already installed. This buildpack now installs a compatible version of Chrome. Please, remove the other Chrome installation. Chrome may have been installed by another buildpack (such as heroku/heroku-buildpack-google-chrome buildpack), which should no longer be used with this buildpack."
 fi
 
-# Detect milestone offset or channel-based version selection
-if [ -f "$ENV_DIR/GOOGLE_CHROME_MILESTONE_OFFSET" ]; then
-  milestone_offset=$(cat "$ENV_DIR/GOOGLE_CHROME_MILESTONE_OFFSET")
-  echo "Using env var GOOGLE_CHROME_MILESTONE_OFFSET=$milestone_offset" | indent
+# Detect specific major version or use latest stable
+if [ -f "$ENV_DIR/GOOGLE_CHROME_MAJOR_VERSION" ]; then
+  major_version=$(cat "$ENV_DIR/GOOGLE_CHROME_MAJOR_VERSION")
+  echo "Using env var GOOGLE_CHROME_MAJOR_VERSION=$major_version" | indent
 
   latest_version_per_milestone="$(curl --silent --show-error --fail --retry 3 --retry-connrefused --connect-timeout 10 "https://googlechromelabs.github.io/chrome-for-testing/latest-versions-per-milestone.json")"
-  VERSION="$(echo $latest_version_per_milestone | jq --raw-output --arg milestone_offset "$milestone_offset" '.milestones | map(.) | sort_by(.milestone)[($milestone_offset | tonumber)] | .version')"
-  echo "Resolved milestone offset $milestone_offset to version $VERSION" | indent
-  INSTALLED_DESCRIPTION="milestone offset $milestone_offset"
-
+  VERSION="$(echo $latest_version_per_milestone | jq --raw-output --arg major_version "$major_version" '.milestones[$major_version] | .version')"
+  
+  if [ -z "$VERSION" ]; then
+    error "Unable to find a version for Chrome major version $major_version"
+  fi
+  
+  echo "Resolved major version $major_version to version $VERSION" | indent
+  INSTALLED_DESCRIPTION="major version $major_version"
 else
-  # Detect requested channel or default to stable
+    # Detect requested channel or default to stable
   if [ -f "$ENV_DIR/GOOGLE_CHROME_CHANNEL" ]; then
     channel=$(cat "$ENV_DIR/GOOGLE_CHROME_CHANNEL")
     echo "Using env var GOOGLE_CHROME_CHANNEL=$channel" | indent
   else
     channel=stable
   fi
-  # The current version endpoint requires ALL CAPS.
+
   CHANNEL="$(echo -n "$channel" | awk '{ print toupper($0) }')"
   VERSION="$(curl --silent --show-error --fail --retry 3 --retry-connrefused --connect-timeout 10 "https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_$CHANNEL")"
   echo "Resolved $CHANNEL version $VERSION" | indent

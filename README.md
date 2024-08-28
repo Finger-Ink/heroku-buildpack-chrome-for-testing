@@ -4,7 +4,7 @@ This buildpack installs **Google Chrome browser** `chrome` & [`chromedriver`](ht
 
 ## Background
 
-In summer 2023, the Chrome development team [addressed a long-standing problem with keeping Chrome & Chromedriver versions updated and aligned](https://developer.chrome.com/blog/chrome-for-testing/) with each other for automated testing environments. This buildpack follows this strategy to keep `chrome` & `chromedriver` versions  in-sync.
+In summer 2023, the Chrome development team [addressed a long-standing problem with keeping Chrome & Chromedriver versions updated and aligned](https://developer.chrome.com/blog/chrome-for-testing/) with each other for automated testing environments. This buildpack follows this strategy to keep `chrome` & `chromedriver` versions in-sync.
 
 ## Installation
 
@@ -15,7 +15,7 @@ In summer 2023, the Chrome development team [addressed a long-standing problem w
 heroku buildpacks:add -i 1 heroku-community/chrome-for-testing
 ```
 
-Deploy the app to install Chrome for Testing. 🚀 
+Deploy the app to install Chrome for Testing. 🚀
 
 ## Selecting the Chrome Release Channel
 
@@ -25,24 +25,18 @@ by [Google](https://googlechromelabs.github.io/chrome-for-testing/).
 You can control the channel of the release by setting the `GOOGLE_CHROME_CHANNEL`
 config variable to `Stable`, `Beta`, `Dev`, or `Canary`, and then deploy/build the app.
 
-## Using an Older Chrome Release
+## Using a Specific Chrome Major Version
 
-If the most recent stable Chrome or Chromedriver release has problems, perhaps due to an 
-app dependency like Selenium not being compatible yet, an older major release can be installed.
+If you need to use a specific major version of Chrome (for example, if a newer version is causing compatibility issues), you can set the `GOOGLE_CHROME_MAJOR_VERSION` config variable.
 
-You can control how many major versions (milestones) back to install, with 
-`GOOGLE_CHROME_MILESTONE_OFFSET` config variable.
+Set `GOOGLE_CHROME_MAJOR_VERSION` to the desired major version number, such as:
 
-*This version offset strategy does not lock the app to a specific Chrome version. It will still update automatically, but lag behind by the specified offset.*
+- `127` for Chrome 127.x
+- `126` for Chrome 126.x
 
-Set `GOOGLE_CHROME_MILESTONE_OFFSET` to a negative index, such as:
-* `-4` for the previous major stable release
-* `-3` for the current major stable release
-* `-2` for the beta release
-* `-1` for the dev release.
+During build, this version number is used to fetch the latest minor version within the specified major version from the Chrome for Testing API [`latest-versions-per-milestone.json`](https://googlechromelabs.github.io/chrome-for-testing/latest-versions-per-milestone.json).
 
-During build, this offset indexes the milestone-sorted data returned from the Chrome for Testing API [`latest-versions-per-milestone.json`](https://googlechromelabs.github.io/chrome-for-testing/latest-versions-per-milestone.json),
-in order to resolve a specific version to install.
+If `GOOGLE_CHROME_MAJOR_VERSION` is not set, the buildpack will use the latest stable version by default.
 
 ## Migrating from Separate Buildpacks
 
@@ -81,17 +75,17 @@ Depending on how an app is already setup for testing with Chrome, it may not req
 
 **If the app fails to start Chrome**, please ensure that the following argument flags are set wherever `chrome` is invoked:
 
-* `--headless`
-* `--no-sandbox`
+- `--headless`
+- `--no-sandbox`
 
 Some use-cases may require these flags too:
 
-* `--disable-gpu`
-* `--remote-debugging-port=9222`
+- `--disable-gpu`
+- `--remote-debugging-port=9222`
 
 ## Releasing a new version
 
-*For buildpack maintainers only.*
+_For buildpack maintainers only._
 
 1. [Create a new release](https://github.com/heroku/heroku-buildpack-chrome-for-testing/releases/new) on GitHub.
 1. [Publish the release tag](https://addons-next.heroku.com/buildpacks/eb9c36ef-a265-4ea3-9468-2cd0fc3f04c1/publish) in Heroku Buildpack Registry.
